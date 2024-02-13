@@ -8,7 +8,7 @@ on:
             - 'feature/*'
 
 env: 
-    MONGU_URI: 'mongodb+srv://cluster0.d3igiqp.mongodb.net/?retryWrites=true&w=majority'
+    MONGO_URI: 'mongodb+srv://cluster0.d3igiqp.mongodb.net/?retryWrites=true&w=majority'
     MONGO_USERNAME: hatziq 
     MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
