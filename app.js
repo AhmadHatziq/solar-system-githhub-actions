@@ -11,6 +11,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '/')));
 app.use(cors())
 
+/*
 mongoose.connect("mongodb://127.0.0.1:27017/local", {
     user: "",
     pass: "",
@@ -23,8 +24,8 @@ mongoose.connect("mongodb://127.0.0.1:27017/local", {
       //  console.log("MongoDB Connection Successful")
     }
 })
+*/
 
-/*
 mongoose.connect(process.env.MONGO_URI, {
     user: process.env.MONGO_USERNAME,
     pass: process.env.MONGO_PASSWORD,
@@ -37,7 +38,6 @@ mongoose.connect(process.env.MONGO_URI, {
       //  console.log("MongoDB Connection Successful")
     }
 })
-*/
 
 var Schema = mongoose.Schema;
 
