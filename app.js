@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const mongoose = require("mongoose");
 const app = express();
 const cors = require('cors')
+require('dotenv').config();
 
 
 app.use(bodyParser.json());
@@ -25,6 +26,8 @@ mongoose.connect("mongodb://127.0.0.1:27017/local", {
     }
 })
 */
+
+console.log("Mongo params: " + process.env.MONGO_URI + " | " + process.env.MONGO_USERNAME + " | " + process.env.MONGO_PASSWORD)
 
 mongoose.connect(process.env.MONGO_URI, {
     user: process.env.MONGO_USERNAME,
