@@ -8,7 +8,7 @@ let chaiHttp = require("chai-http");
 chai.should();
 chai.use(chaiHttp); 
 
-/*
+
 describe('Planets API Suite', () => {
 
     describe('Fetching Planet Details', () => {
@@ -149,7 +149,7 @@ describe('Planets API Suite', () => {
 
     });        
 });
-*/
+
 
 //Use below test case to achieve coverage
 describe('Testing Other Endpoints', () => {
