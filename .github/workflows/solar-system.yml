@@ -55,14 +55,17 @@ jobs:
     code-coverage-job: 
         name: Code Coverage Job
         runs-on: ubuntu-latest 
+        container: 
+          image: node:18
+          
         steps: 
         - name: Checkout Repo 
           uses: actions/checkout@v4 
 
-        - name: Setup NodeJS v18 
-          uses: actions/setup-node@v3 
-          with: 
-            node-version: 18 
+        # - name: Setup NodeJS v18 
+        #   uses: actions/setup-node@v3 
+        #   with: 
+        #     node-version: 18 
 
         - name: Cache NPM Dependencies 
           uses: actions/cache@v3 
