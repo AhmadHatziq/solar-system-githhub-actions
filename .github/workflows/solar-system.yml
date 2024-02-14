@@ -91,7 +91,7 @@ jobs:
         packages: write   # Used for github token to write to Github Container Registry 
       runs-on: ubuntu-latest 
       container: 
-        image: docker.io/bobuvula/cicd-runner-python-az:latest
+        image: docker.io/bobuvula/cicd-runner-python-az:2024-1-3
         credentials: 
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}   
