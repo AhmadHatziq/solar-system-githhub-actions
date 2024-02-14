@@ -91,7 +91,7 @@ jobs:
         packages: write   # Used for github token to write to Github Container Registry 
       runs-on: ubuntu-latest 
       container: 
-        image: docker.io/bobuvula/cicd-runner-python-az
+        image: docker.io/bobuvula/cicd-runner-python-az:latest
         credentials: 
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}   
@@ -155,4 +155,4 @@ jobs:
             ghcr.io/${{ steps.step_string.outputs.lowercase }}/solar-system:${{ github.sha }}
 
       - name: Check AZ version 
-        runs: az version
+        run: az version
