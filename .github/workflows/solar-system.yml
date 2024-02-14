@@ -132,6 +132,12 @@ jobs:
           
           echo Testing Image URL using wget 
           wget -q -O - 127.0.0.1:3000/live | grep live 
+
+      - name: Convert GitHub username to lowercase for GHCR requirements
+        id: step_string 
+        uses: ASzc/change-string-case-action@v6 
+        with: 
+          string: ${{ github.repository_owner }}
             
       - name: Container Registry Push Image 
         uses: docker/build-push-action@v4 
@@ -140,4 +146,4 @@ jobs:
           push: true # Will used cached image
           tags: | 
             ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
-            ghcr.io/${{ github.repository_owner }}/solar-system:${{ github.sha }}
+            ghcr.io/${{ steps.step_string.outputs.lowercase }}/solar-system:${{ github.sha }}
