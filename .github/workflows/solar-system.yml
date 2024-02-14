@@ -13,7 +13,7 @@ env:
     MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
 jobs: 
-    unit-testing: 
+    unit-testing-job: 
         name: Unit Testing Job 
         strategy: 
             matrix: 
@@ -52,7 +52,7 @@ jobs:
                 name: Mocha-Test-Result
                 path: test-results.xml
  
-    code-coverage: 
+    code-coverage-job: 
         name: Code Coverage Job
         runs-on: ubuntu-latest 
         steps: 
@@ -84,4 +84,16 @@ jobs:
             path: coverage
             retention-days: 5        
         
-            
+    docker-job: 
+      name: Docker Containerization Job 
+      needs: [unit-testing-job, code-coverage-job]
+      runs-on: ubuntu-latest 
+      steps: 
+      - name: Checkout Repo 
+        uses: actions/checkout@v4 
+
+      - name: Dockerhub login 
+        uses: docker/login-action@v2.2.0 
+        with: 
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}            
