@@ -110,5 +110,6 @@ jobs:
           docker images 
           echo Image: "${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}"
           docker run --name solar-system-app -d \
+           -p 3000:3000 \
            "${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}" 
             
