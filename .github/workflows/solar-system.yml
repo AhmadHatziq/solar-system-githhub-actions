@@ -87,6 +87,8 @@ jobs:
     container-registry-job: 
       name: Docker Containerization Job to DockerHub & Github Container Registry 
       needs: [unit-testing-job, code-coverage-job]
+      permissions: 
+        packages: write   # Used for github token to write to Github Container Registry 
       runs-on: ubuntu-latest 
       steps: 
       - name: Checkout Repo 
@@ -110,7 +112,9 @@ jobs:
         with: 
           context: . 
           push: false # Only build the image, not push image 
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+          tags: | 
+            ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/solar-system:${{ github.sha }}
           
       - name: Docker Image Testing 
         run: | 
