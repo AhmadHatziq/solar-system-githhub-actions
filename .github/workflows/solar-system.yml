@@ -103,10 +103,11 @@ jobs:
         with: 
           context: . 
           push: false # Only build the image, not push image 
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha}}
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
           
       - name: Docker Image Testing 
         run: | 
           docker images 
+          echo Image: "${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}"
           docker run --name solar-system-app -d \ 
-            ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }} 
+            "${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}"
