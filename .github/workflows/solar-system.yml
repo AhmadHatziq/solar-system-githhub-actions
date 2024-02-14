@@ -109,4 +109,4 @@ jobs:
         run: | 
           docker images 
           docker run --name solar-system-app -d \ 
-            ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha}} 
+            ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }} 
