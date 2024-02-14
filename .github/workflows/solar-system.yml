@@ -83,9 +83,24 @@ jobs:
             name: Code-Coverage-Result
             path: coverage
             retention-days: 5        
-        
-    docker-job: 
-      name: Docker Containerization Job 
+     
+    github-container-registry-job:         
+      name: GitHub Container Registry Job 
+      needs: [unit-testing-job, code-coverage-job]
+      runs-on: ubuntu-latest 
+      steps: 
+        - name: Checkout Repo 
+          uses: actions/checkout@v4 
+
+        - name: GitHub Container Registry login 
+          uses: docker/login-action@v2.2.0 
+          with: 
+            registry: ghcr.io
+            username: ${{ github.repository_owner }} 
+            password: ${{ secrets.GITHUB_TOKEN }}
+
+    dockerhub-container-registry-job: 
+      name: Docker Containerization Job to DockerHub
       needs: [unit-testing-job, code-coverage-job]
       runs-on: ubuntu-latest 
       steps: 
