@@ -84,23 +84,8 @@ jobs:
             path: coverage
             retention-days: 5        
      
-    github-container-registry-job:         
-      name: GitHub Container Registry Job 
-      needs: [unit-testing-job, code-coverage-job]
-      runs-on: ubuntu-latest 
-      steps: 
-        - name: Checkout Repo 
-          uses: actions/checkout@v4 
-
-        - name: GitHub Container Registry login 
-          uses: docker/login-action@v2.2.0 
-          with: 
-            registry: ghcr.io
-            username: ${{ github.repository_owner }} 
-            password: ${{ secrets.GITHUB_TOKEN }}
-
-    dockerhub-container-registry-job: 
-      name: Docker Containerization Job to DockerHub
+    container-registry-job: 
+      name: Docker Containerization Job to DockerHub & Github Container Registry 
       needs: [unit-testing-job, code-coverage-job]
       runs-on: ubuntu-latest 
       steps: 
@@ -111,7 +96,14 @@ jobs:
         uses: docker/login-action@v2.2.0 
         with: 
           username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}    
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}   
+          
+      - name: GitHub Container Registry login 
+        uses: docker/login-action@v2.2.0 
+        with: 
+          registry: ghcr.io
+          username: ${{ github.repository_owner }} 
+          password: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Docker Build Image For Testing 
         uses: docker/build-push-action@v4 
@@ -137,9 +129,11 @@ jobs:
           echo Testing Image URL using wget 
           wget -q -O - 127.0.0.1:3000/live | grep live 
             
-      - name: Docker Push Image 
+      - name: Container Registry Push Image 
         uses: docker/build-push-action@v4 
         with: 
           context: . 
           push: true # Will used cached image
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+          tags: | 
+            ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/solar-system:${{ github.sha }}
