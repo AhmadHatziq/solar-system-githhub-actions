@@ -161,3 +161,19 @@ jobs:
 
       - name: Check AZ version 
         run: az version
+
+    dev-deploy-job: 
+      needs: container-registry-job 
+      runs-on: ubuntu-latest 
+      steps: 
+        - name: Checkout Repo 
+          uses: actions/ckeckout@v4 
+        - name: Install kubectl CLI 
+          uses: azure/setup-kubectl@v3 
+          with: 
+            version: 'v1.26.0'
+        - name: Fetch k8s Cluster Details 
+          run: | 
+            kubectl version -short
+            echo =================================
+            kubectl get nodes
