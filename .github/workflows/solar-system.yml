@@ -197,12 +197,12 @@ jobs:
           with:
             files: '["kubernetes/development/*.yaml"]'
             tokenPrefix: '_{_'
-            tokenSuffic: '_}'
+            tokenSuffix: '_}'
           env:
             NAMESPACE: ${{ vars.NAMESPACE }}
             REPLICAS: ${{ vars.REPLICAS }}
-            IMAGE:  ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+            K8S_IMAGE:  ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
 
         - name: Echo out kubernetes yaml file 
           run: | 
-            cat kubernetes/development.yaml 
+            cat kubernetes/development/deployment.yaml
