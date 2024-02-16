@@ -168,10 +168,25 @@ jobs:
       steps: 
         - name: Checkout Repo 
           uses: actions/checkout@v4 
+
         - name: Install kubectl CLI 
           uses: azure/setup-kubectl@v3 
           with: 
             version: 'v1.26.0'
+
+        - name: Login to Azure 
+          uses: azure/login@v1 
+          with: 
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+        - name: Azure Account Show 
+          uses: azure/CLI@v1 
+          with: 
+            azcliversion: latest 
+            inlineScript: | 
+              az account show 
+              az version
+
         - name: Fetch k8s Cluster Details 
           run: | 
             kubectl version -short
