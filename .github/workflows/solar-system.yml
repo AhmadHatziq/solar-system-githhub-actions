@@ -167,7 +167,7 @@ jobs:
       runs-on: ubuntu-latest 
       steps: 
         - name: Checkout Repo 
-          uses: actions/ckeckout@v4 
+          uses: actions/checkout@v4 
         - name: Install kubectl CLI 
           uses: azure/setup-kubectl@v3 
           with: 
