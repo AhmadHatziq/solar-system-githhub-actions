@@ -187,7 +187,22 @@ jobs:
               az account show 
               az version
 
-        - name: Fetch k8s Cluster Details 
-          run: | 
-            kubectl version --short
+        
+        # - name: Fetch k8s Cluster Details 
+        #   run: | 
+        #     kubectl version --short
 
+        - name: Replace Token in Manifest Files 
+          uses: cschleiden/replace-tokens@v1
+          with:
+            files: '["kubernetes/development/*.yaml"]'
+            tokenPrefix: '_{_'
+            tokenSuffic: '_}'
+          env:
+            NAMESPACE: ${{ vars.NAMESPACE }}
+            REPLICAS: ${{ vars.REPLICAS }}
+            IMAGE:  ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+
+        - name: Echo out kubernetes yaml file 
+          run: | 
+            cat kubernetes/development.yaml 
