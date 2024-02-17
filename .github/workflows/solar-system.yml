@@ -203,6 +203,17 @@ jobs:
             REPLICAS: ${{ vars.REPLICAS }}
             K8S_IMAGE:  ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
 
-        - name: Echo out kubernetes yaml file 
+        - name: Deploy to kubernetes cluster
           run: | 
             cat kubernetes/development/deployment.yaml
+            echo kubectl -n ${{ vars.NAMESPACE }} apply -f deployment.yaml 
+
+    integration-testing-job: 
+      name: Dev k8s Cluster Integration Testing 
+      needs: dev-deploy-job 
+      runs-on: ubuntu-latest 
+      steps: 
+        - name: Test URL using Curl 
+          run: | 
+            echo $URL
+            
