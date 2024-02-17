@@ -164,6 +164,8 @@ jobs:
 
     dev-deploy-job: 
       needs: container-registry-job 
+      outputs: 
+        APP_URL: ${{ steps.set-app-url.outputs.APP_URL }}
       runs-on: ubuntu-latest 
       steps: 
         - name: Checkout Repo 
@@ -208,12 +210,19 @@ jobs:
             cat kubernetes/development/deployment.yaml
             echo kubectl -n ${{ vars.NAMESPACE }} apply -f deployment.yaml 
 
+        - name: Set App ingress URL
+          id: set-app-url
+          run: | 
+            echo "APP_URL=http://app.website.com" >> "$GITHUB_OUTPUT"
+
     integration-testing-job: 
       name: Dev k8s Cluster Integration Testing 
       needs: dev-deploy-job 
       runs-on: ubuntu-latest 
       steps: 
         - name: Test URL using Curl 
+          env: 
+            APP_URL: ${{ needs.dev-deploy-job.outputs.APP_URL }}
           run: | 
-            echo $URL
-            
+            echo Obtained APP_URL as $APP_URL
+            echo curl $APP_URL
