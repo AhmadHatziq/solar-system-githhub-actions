@@ -1,0 +1,242 @@
+name: Solar System Workflow 
+
+on: 
+    workflow_dispatch: 
+    push: 
+        branches: 
+            - main 
+            - 'feature/*'
+
+env: 
+    MONGO_URI: 'mongodb+srv://cluster0.d3igiqp.mongodb.net/?retryWrites=true&w=majority'
+    MONGO_USERNAME: hatziq 
+    MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+
+jobs: 
+    unit-testing-job: 
+        name: Unit Testing Job 
+        strategy: 
+            matrix: 
+                nodejs_version: [19, 20]
+                operating_system: [ubuntu-latest, ubuntu-22.04]
+                exclude: 
+                    - nodejs_version: 18 
+                      operating_system: ubuntu-latest
+        runs-on: ${{ matrix.operating_system }}
+        steps: 
+            - name: Checkout Repo 
+              uses: actions/checkout@v4 
+
+            - name: Setup NodeJS v18 
+              uses: actions/setup-node@v3 
+              with: 
+                node-version: ${{ matrix.nodejs_version }}
+
+            - name: Cache NPM Dependencies 
+              uses: actions/cache@v3 
+              with: 
+                path: node_modules
+                key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+
+            - name: Install dependencies 
+              run: npm install 
+
+            - name: Unit Testing 
+              id: nodejs-unit-testing-step
+              run: npm test 
+
+            - name: Archive the Test Result 
+              if: always()
+              uses: actions/upload-artifact@v3 
+              with: 
+                name: Mocha-Test-Result
+                path: test-results.xml
+ 
+    code-coverage-job: 
+        name: Code Coverage Job
+        runs-on: ubuntu-latest 
+        container: 
+          image: node:18
+          
+        steps: 
+        - name: Checkout Repo 
+          uses: actions/checkout@v4 
+
+        # - name: Setup NodeJS v18 
+        #   uses: actions/setup-node@v3 
+        #   with: 
+        #     node-version: 18 
+
+        - name: Cache NPM Dependencies 
+          uses: actions/cache@v3 
+          with: 
+            path: node_modules
+            key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}            
+
+        - name: Install dependencies 
+          run: npm install 
+
+        - name: Check Code Coverage 
+          continue-on-error: true 
+          run: npm run coverage 
+
+        - name: Archive the Coverage Result 
+          uses: actions/upload-artifact@v3 
+          with: 
+            name: Code-Coverage-Result
+            path: coverage
+            retention-days: 5        
+     
+    container-registry-job: 
+      name: Docker Containerization Job to DockerHub & Github Container Registry 
+      needs: [unit-testing-job, code-coverage-job]
+      permissions: 
+        packages: write   # Used for github token to write to Github Container Registry 
+      runs-on: ubuntu-latest 
+      
+      # Use custom image for container job with pre-installed tools & dependencies 
+      # container: 
+      #   image: docker.io/bobuvula/cicd-runner-python-az:2024-1-3
+      #   credentials: 
+      #     username: ${{ vars.DOCKERHUB_USERNAME }}
+      #    password: ${{ secrets.DOCKERHUB_PASSWORD }}   
+
+      steps: 
+      - name: Checkout Repo 
+        uses: actions/checkout@v4 
+
+      - name: Convert GitHub username to lowercase for GHCR requirements
+        id: step_string 
+        uses: ASzc/change-string-case-action@v6 
+        with: 
+          string: ${{ github.repository_owner }}
+
+      - name: Dockerhub login 
+        uses: docker/login-action@v2.2.0 
+        with: 
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}   
+          
+      - name: GitHub Container Registry login 
+        uses: docker/login-action@v2.2.0 
+        with: 
+          registry: ghcr.io
+          username: ${{ github.repository_owner }} 
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Docker Build Image For Testing 
+        uses: docker/build-push-action@v4 
+        with: 
+          context: . 
+          push: false # Only build the image, not push image 
+          tags: | 
+            ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+            ghcr.io/${{ steps.step_string.outputs.lowercase }}/solar-system:${{ github.sha }}
+          
+      - name: Docker Image Testing 
+        run: | 
+          docker images 
+          echo Image: "${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}"
+          docker run --name solar-system-app -d \
+           -p 3000:3000 \
+           -e MONGO_URI=$MONGO_URI \
+           -e MONGO_USERNAME=$MONGO_USERNAME \
+           -e MONGO_PASSWORD=$MONGO_PASSWORD \
+           "${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}"
+          
+          export IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' solar-system-app)
+          echo $IP 
+          
+          echo Testing Image URL using wget 
+          wget -q -O - 127.0.0.1:3000/live | grep live 
+
+      - name: Container Registry Push Image 
+        uses: docker/build-push-action@v4 
+        with: 
+          context: . 
+          push: true # Will used cached image
+          tags: | 
+            ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+            ghcr.io/${{ steps.step_string.outputs.lowercase }}/solar-system:${{ github.sha }}
+
+      - name: Check AZ version 
+        run: az version
+
+    dev-deploy-job: 
+      needs: container-registry-job 
+      if: github.ref != 'refs/heads/main'
+      environment: 
+        name: development 
+        url: https://${{ steps.set-app-url.outputs.APP_URL }}
+      outputs: 
+        APP_URL: ${{ steps.set-app-url.outputs.APP_URL }}
+      runs-on: ubuntu-latest 
+      steps: 
+        - name: Checkout Repo 
+          uses: actions/checkout@v4 
+
+        - name: Install kubectl CLI 
+          uses: azure/setup-kubectl@v3 
+          with: 
+            version: 'v1.26.0'
+
+        - name: Login to Azure 
+          uses: azure/login@v1 
+          with: 
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+        - name: Azure Account Show 
+          uses: azure/CLI@v1 
+          with: 
+            azcliversion: latest 
+            inlineScript: | 
+              az account show 
+              az version
+
+        
+        # - name: Fetch k8s Cluster Details 
+        #   run: | 
+        #     kubectl version --short
+
+        - name: Replace Token in Manifest Files 
+          uses: cschleiden/replace-tokens@v1
+          with:
+            files: '["kubernetes/development/*.yaml"]'
+            tokenPrefix: '${'
+            tokenSuffix: '}'
+          env:
+            NAMESPACE: ${{ vars.NAMESPACE }}
+            REPLICAS: ${{ vars.REPLICAS }}
+            K8S_IMAGE:  ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+
+        - name: Deploy to kubernetes cluster
+          run: | 
+            cat kubernetes/development/deployment.yaml
+            echo kubectl -n ${{ vars.NAMESPACE }} apply -f deployment.yaml 
+
+        - name: Set App ingress URL
+          id: set-app-url
+          run: | 
+            echo "APP_URL=http://app.website.com" >> "$GITHUB_OUTPUT"
+
+    integration-testing-job: 
+      name: Dev k8s Cluster Integration Testing 
+      needs: dev-deploy-job 
+      runs-on: ubuntu-latest 
+      steps: 
+        - name: Test URL using Curl 
+          env: 
+            APP_URL: ${{ needs.dev-deploy-job.outputs.APP_URL }}
+          run: | 
+            echo Obtained APP_URL as $APP_URL
+            echo curl $APP_URL
+
+    prod-deployment-job: 
+      name: Prod Deployment 
+      if: github.ref == 'refs/heads/main'
+      needs: container-registry-job
+      runs-on: ubuntu-latest 
+      steps: 
+        - name: Deploy to Dev 
+          run: | 
+            echo Deploying to prod 
