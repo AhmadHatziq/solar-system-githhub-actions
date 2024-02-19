@@ -229,3 +229,13 @@ jobs:
           run: | 
             echo Obtained APP_URL as $APP_URL
             echo curl $APP_URL
+
+    prod-deployment-job: 
+      name: Prod Deployment 
+      if: github.ref == 'refs/heads/main'
+      needs: container-registry-job
+      runs-on: ubuntu-latest 
+      steps: 
+        - name: Deploy to Dev 
+          run: | 
+            echo Deploying to prod 
