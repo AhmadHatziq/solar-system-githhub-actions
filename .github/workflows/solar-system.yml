@@ -164,6 +164,7 @@ jobs:
 
     dev-deploy-job: 
       needs: container-registry-job 
+      if: github.ref != 'refs/heads/main'
       environment: 
         name: development 
         url: https://${{ steps.set-app-url.outputs.APP_URL }}
