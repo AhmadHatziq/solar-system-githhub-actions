@@ -165,7 +165,7 @@ jobs:
     dev-deploy-job: 
       needs: container-registry-job 
       if: github.ref != 'refs/heads/main'
-      uses: .github/workflows/service-container-example.yml
+      uses: ./.github/workflows/reuse-deployment.yml
 
     integration-testing-job: 
       name: Dev k8s Cluster Integration Testing 
