@@ -165,59 +165,7 @@ jobs:
     dev-deploy-job: 
       needs: container-registry-job 
       if: github.ref != 'refs/heads/main'
-      environment: 
-        name: development 
-        url: https://${{ steps.set-app-url.outputs.APP_URL }}
-      outputs: 
-        APP_URL: ${{ steps.set-app-url.outputs.APP_URL }}
-      runs-on: ubuntu-latest 
-      steps: 
-        - name: Checkout Repo 
-          uses: actions/checkout@v4 
-
-        - name: Install kubectl CLI 
-          uses: azure/setup-kubectl@v3 
-          with: 
-            version: 'v1.26.0'
-
-        - name: Login to Azure 
-          uses: azure/login@v1 
-          with: 
-            creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-        - name: Azure Account Show 
-          uses: azure/CLI@v1 
-          with: 
-            azcliversion: latest 
-            inlineScript: | 
-              az account show 
-              az version
-
-        
-        # - name: Fetch k8s Cluster Details 
-        #   run: | 
-        #     kubectl version --short
-
-        - name: Replace Token in Manifest Files 
-          uses: cschleiden/replace-tokens@v1
-          with:
-            files: '["kubernetes/development/*.yaml"]'
-            tokenPrefix: '${'
-            tokenSuffix: '}'
-          env:
-            NAMESPACE: ${{ vars.NAMESPACE }}
-            REPLICAS: ${{ vars.REPLICAS }}
-            K8S_IMAGE:  ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
-
-        - name: Deploy to kubernetes cluster
-          run: | 
-            cat kubernetes/development/deployment.yaml
-            echo kubectl -n ${{ vars.NAMESPACE }} apply -f deployment.yaml 
-
-        - name: Set App ingress URL
-          id: set-app-url
-          run: | 
-            echo "APP_URL=http://app.website.com" >> "$GITHUB_OUTPUT"
+      uses: .github/workflows/service-container-example.yml
 
     integration-testing-job: 
       name: Dev k8s Cluster Integration Testing 
