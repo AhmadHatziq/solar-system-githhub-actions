@@ -190,3 +190,29 @@ jobs:
         - name: Deploy to Dev 
           run: | 
             echo Deploying to prod 
+
+    upload-reports-job: 
+      needs: [code-coverage-job, unit-testing-job]
+      name: Upload Test Reports 
+      runs-on: ubuntu-latest 
+      continue-on-error: true 
+      steps: 
+        - name: Download Mocha Test Artifact 
+          uses: actions/download-artifact@v3 
+          with:  
+            name: Mocha-Test-Result  
+        - name: Download Mocha Test Artifact 
+          uses: actions/download-artifact@v3 
+          with:  
+            name:  Code-Coverage-Result   
+        - name: Merge Test Files 
+          run: | 
+            ls -lthr 
+            mkdir reports-${{ github.sha }}
+            mv test-results.xml reports-${{ github.sha }}/
+            mv cobertura-coverage.xml reports-${{ github.sha }}/
+            mv coverage-summary.json reports-${{ github.sha }}/
+            ls -lthr reports-${{ github.sha }}/
+        - name: Upload to S3 
+          run: | 
+            echo uploading files to S3
