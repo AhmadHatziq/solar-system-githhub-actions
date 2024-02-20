@@ -166,6 +166,8 @@ jobs:
       needs: container-registry-job 
       if: github.ref != 'refs/heads/main'
       uses: ./.github/workflows/reuse-deployment.yml
+      secrets: 
+        AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
     integration-testing-job: 
       name: Dev k8s Cluster Integration Testing 

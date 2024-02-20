@@ -2,7 +2,10 @@ name: Deployment - Reusable Workflow
 
 on: 
     workflow_call: 
-
+        secrets: 
+            AZURE_CREDENTIALS: 
+                required: true 
+            
 jobs: 
     reuse-deploy: 
         environment: 
