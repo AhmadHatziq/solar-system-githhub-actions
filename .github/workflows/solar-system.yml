@@ -68,19 +68,26 @@ jobs:
         - name: Checkout Repo 
           uses: actions/checkout@v4 
 
+        # Comment out to use node:18 image 
         # - name: Setup NodeJS v18 
         #   uses: actions/setup-node@v3 
         #   with: 
         #     node-version: 18 
 
-        - name: Cache NPM Dependencies 
-          uses: actions/cache@v3 
+        - name: Composite Custom Action - Cache & Install NPM Packages 
+          uses: ./.github/custom-actions/npm-action 
           with: 
-            path: node_modules
-            key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}            
+            path-of-folder: 'node_modules'
 
-        - name: Install dependencies 
-          run: npm install 
+        # Comment out to use composite action 
+        # - name: Cache NPM Dependencies 
+        #   uses: actions/cache@v3 
+        #   with: 
+        #     path: node_modules
+        #     key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}            
+ 
+        # - name: Install dependencies 
+        #   run: npm install 
 
         - name: Check Code Coverage 
           continue-on-error: true 
