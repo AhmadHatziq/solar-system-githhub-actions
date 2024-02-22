@@ -32,14 +32,20 @@ jobs:
               with: 
                 node-version: ${{ matrix.nodejs_version }}
 
-            - name: Cache NPM Dependencies 
-              uses: actions/cache@v3 
+            - name: Composite Custom Action - Cache & Install NPM Packages 
+              uses: .github/custom-actions/npm-action/action.yml 
               with: 
-                path: node_modules
-                key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+                path-of-folder: 'node_modules'
 
-            - name: Install dependencies 
-              run: npm install 
+            # Comment out to use custom action       
+            # - name: Cache NPM Dependencies 
+            #   uses: actions/cache@v3 
+            #   with: 
+            #     path: node_modules
+            #     key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+ 
+            # - name: Install dependencies 
+            #   run: npm install 
 
             - name: Unit Testing 
               id: nodejs-unit-testing-step
@@ -217,4 +223,4 @@ jobs:
           run: | 
             echo uploading files to S3
 
-            
+
