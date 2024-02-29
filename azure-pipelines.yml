@@ -8,6 +8,6 @@ stages:
   - job: EchoJob
     displayName: Echo
     pool:
-      vmImage: ubuntu-latest
+      name: Default 
     steps:
     - script: echo "hello world"
