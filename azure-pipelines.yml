@@ -10,8 +10,8 @@ stages:
     pool:
       name: Default 
     steps:
-    - displayName: Print Hello World
-      script: echo "hello world"
-    - displayName: Docker Version
-      script: docker version
+    - script: echo "hello world"
+      displayName: Print Hello World
+    - script: docker version
+      displayName: Docker Version
     
