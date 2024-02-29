@@ -1,0 +1,17 @@
+trigger:
+- '*'
+
+stages:
+- stage: Echo
+  displayName: Echo "hello world"
+  jobs:
+  - job: EchoJob
+    displayName: Echo
+    pool:
+      name: Default 
+    steps:
+    - script: echo "hello world"
+      displayName: Print Hello World
+    - script: docker version
+      displayName: Docker Version
+    
